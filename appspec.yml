@@ -1,0 +1,14 @@
+version: 0.0
+os: linux
+files:
+  - source: /index.html
+    destination: /var/www/html/
+hooks:
+  BeforeInstall:
+    - location: src/codedeploy/scripts/install_tools
+      timeout: 300
+      runas: root
+    - location: src/codedeploy/scripts/preload_libs
+      timeout: 300
+      runas: root
+
