@@ -9,4 +9,4 @@ lib_managed/
 src_managed/
 project/boot/
 .history
-.cache
+.cache.idea/
