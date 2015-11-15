@@ -7,10 +7,10 @@ import org.apache.spark.{SparkConf, SparkContext}
 import twitter4j.auth.OAuthAuthorization
 import twitter4j.conf.ConfigurationBuilder
     
-object App {
+object ReadTweetsApp {
 
   def main(args: Array[String]): Unit = {
-    val conf = new SparkConf().setAppName("TwitterLangApp").setMaster("local[*]")
+    val conf = new SparkConf().setAppName("ReadTweetsApp").setMaster("local[*]")
     val sc = new SparkContext(conf)
     val windowLength = Seconds(10)
     val ssc = new StreamingContext(sc, windowLength)
