@@ -15,6 +15,7 @@ object App {
     val windowLength = Seconds(10)
     val ssc = new StreamingContext(sc, windowLength)
     val sqlContext = SQLContext.getOrCreate(sc)
+    import sqlContext.implicits._
 
     val cb = new ConfigurationBuilder()
     cb.setDebugEnabled(true)
@@ -34,7 +35,7 @@ object App {
       new Tweet(status.getUser().getId, status.getId(), status.getText(), location, hasMedia)
     }
 
-    tweets.foreachRDD { ts => ts.foreach{ t => println(t) } }
+    tweets.foreachRDD { ts => ts.toDF().show() }
 
     ssc.start()
     ssc.awaitTermination()
