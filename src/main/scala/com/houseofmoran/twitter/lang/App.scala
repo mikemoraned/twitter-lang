@@ -1,6 +1,6 @@
 package com.houseofmoran.twitter.lang
 
-import org.apache.spark.sql.SQLContext
+import org.apache.spark.sql.{SaveMode, SQLContext}
 import org.apache.spark.streaming.twitter._
 import org.apache.spark.streaming.{Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -35,7 +35,11 @@ object App {
       new Tweet(status.getUser().getId, status.getId(), status.getText(), location, hasMedia)
     }
 
-    tweets.foreachRDD { ts => ts.toDF().show() }
+    tweets.foreachRDD { ts =>
+      val df = ts.toDF()
+      df.show()
+      df.write.format("parquet").mode(SaveMode.Append).save("tweets.parquet")
+    }
 
     ssc.start()
     ssc.awaitTermination()
