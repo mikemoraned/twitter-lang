@@ -1,11 +1,11 @@
 package com.houseofmoran.twitter.lang
 
-import org.apache.spark.streaming.twitter._
-import org.apache.spark.{SparkContext, SparkConf}
-import org.apache.spark.streaming.{StreamingContext, Seconds}
 import org.apache.spark.sql.SQLContext
+import org.apache.spark.streaming.twitter._
+import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.{SparkConf, SparkContext}
+import twitter4j.auth.OAuthAuthorization
 import twitter4j.conf.ConfigurationBuilder
-import twitter4j.auth.OAuthAuthorization    
     
 object App {
 
@@ -15,7 +15,6 @@ object App {
     val windowLength = Seconds(10)
     val ssc = new StreamingContext(sc, windowLength)
     val sqlContext = SQLContext.getOrCreate(sc)
-    import sqlContext.implicits._
 
     val cb = new ConfigurationBuilder()
     cb.setDebugEnabled(true)
@@ -29,9 +28,13 @@ object App {
     val geoStatuses = twitterStream.
       filter(status => status.getGeoLocation() != null)
 
-    geoStatuses.foreachRDD { statuses =>
-			     statuses.foreach{ status => println(status) }
+    val tweets = geoStatuses.map{ status =>
+      val location = new Location(status.getGeoLocation().getLatitude(), status.getGeoLocation().getLongitude)
+      val hasMedia = status.getMediaEntities() != null && status.getMediaEntities().length > 0
+      new Tweet(status.getUser().getId, status.getId(), status.getText(), location, hasMedia)
     }
+
+    tweets.foreachRDD { ts => ts.foreach{ t => println(t) } }
 
     ssc.start()
     ssc.awaitTermination()
