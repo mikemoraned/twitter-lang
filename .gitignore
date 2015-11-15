@@ -10,3 +10,7 @@ src_managed/
 project/boot/
 .history
 .cache.idea/
+
+# Idea
+## Directory-based project format:
+.idea/
