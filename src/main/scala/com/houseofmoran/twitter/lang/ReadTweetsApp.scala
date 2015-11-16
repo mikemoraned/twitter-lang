@@ -2,7 +2,7 @@ package com.houseofmoran.twitter.lang
 
 import org.apache.spark.sql.{SaveMode, SQLContext}
 import org.apache.spark.streaming.twitter._
-import org.apache.spark.streaming.{Seconds, StreamingContext}
+import org.apache.spark.streaming.{Minutes, Seconds, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import twitter4j.auth.OAuthAuthorization
 import twitter4j.conf.ConfigurationBuilder
@@ -12,7 +12,7 @@ object ReadTweetsApp {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("ReadTweetsApp").setMaster("local[*]")
     val sc = new SparkContext(conf)
-    val windowLength = Seconds(10)
+    val windowLength = Minutes(5)
     val ssc = new StreamingContext(sc, windowLength)
     val sqlContext = SQLContext.getOrCreate(sc)
     import sqlContext.implicits._
