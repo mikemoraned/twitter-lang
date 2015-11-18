@@ -2,7 +2,7 @@ package com.houseofmoran.twitter.lang
 
 import org.apache.spark.sql.{SaveMode, SQLContext}
 import org.apache.spark.streaming.twitter._
-import org.apache.spark.streaming.{Minutes, Seconds, StreamingContext}
+import org.apache.spark.streaming.{Minutes, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 import twitter4j.auth.OAuthAuthorization
 import twitter4j.conf.ConfigurationBuilder
@@ -12,8 +12,8 @@ object ReadTweetsApp {
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("ReadTweetsApp").setMaster("local[*]")
     val sc = new SparkContext(conf)
-    val windowLength = Minutes(5)
-    val ssc = new StreamingContext(sc, windowLength)
+    val batchInterval = Minutes(1)
+    val ssc = new StreamingContext(sc, batchInterval)
     val sqlContext = SQLContext.getOrCreate(sc)
     import sqlContext.implicits._
 
@@ -29,17 +29,20 @@ object ReadTweetsApp {
     val geoStatuses = twitterStream.
       filter(status => status.getGeoLocation() != null)
 
-    val tweets = geoStatuses.map{ status =>
+    val tweetStream = geoStatuses.map{ status =>
       val location = new Location(status.getGeoLocation().getLatitude(), status.getGeoLocation().getLongitude)
       val hasMedia = status.getMediaEntities() != null && status.getMediaEntities().length > 0
       new Tweet(status.getUser().getId, status.getId(), status.getText(), location, hasMedia)
     }
 
-    tweets.foreachRDD { ts =>
-      val df = ts.toDF()
-      df.show()
-      df.write.format("parquet").mode(SaveMode.Append).save("tweets.parquet")
-    }
+    val windowSize = batchInterval * 1
+    tweetStream.window(windowSize, windowSize).foreachRDD( (tweetsRDD, time) => {
+      val tweetsDF = tweetsRDD.toDF()
+      tweetsDF.show()
+      tweetsDF.write.
+        format("parquet").
+        save(s"tweets/${time.milliseconds}.parquet")
+    })
 
     ssc.start()
     ssc.awaitTermination()
