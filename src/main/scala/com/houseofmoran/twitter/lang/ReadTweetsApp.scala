@@ -35,7 +35,7 @@ object ReadTweetsApp {
       new Tweet(status.getUser().getId, status.getId(), status.getText(), location, hasMedia)
     }
 
-    val windowSize = batchInterval * 1
+    val windowSize = batchInterval * 5
     tweetStream.window(windowSize, windowSize).foreachRDD( (tweetsRDD, time) => {
       val tweetsDF = tweetsRDD.toDF()
       tweetsDF.show()
