@@ -14,6 +14,6 @@ object SummariseSavedTweetsApp {
     val tweetsDF = tweetsFile.coalesce(100).toDF()
 
     println(s"Count of tweets: ${tweetsDF.count()}")
-    tweetsDF.show(false)
+    tweetsDF.sample(false, 0.1).show(false)
   }
 }
