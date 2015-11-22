@@ -41,7 +41,7 @@ object ReadTweetsApp {
       tweetsDF.show()
       tweetsDF.write.
         format("parquet").
-        save(s"tweets/${time.milliseconds}.parquet")
+        save(s"tweetsN/${time.milliseconds}.parquet")
     })
 
     ssc.start()
