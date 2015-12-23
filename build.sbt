@@ -2,6 +2,11 @@ enablePlugins(JavaAppPackaging)
 
 mainClass in Compile := Some("com.houseofmoran.twitter.lang.ReadTweetsApp")
 
+fork in run := true
+
+javaOptions in run += "-Xms2G"
+javaOptions in run += "-Xmx4G"
+
 name := """twitter-lang"""
 
 version := "0.1"
