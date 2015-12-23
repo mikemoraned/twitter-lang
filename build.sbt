@@ -1,3 +1,7 @@
+enablePlugins(JavaAppPackaging)
+
+mainClass in Compile := Some("com.houseofmoran.twitter.lang.ReadTweetsApp")
+
 name := """twitter-lang"""
 
 version := "0.1"
