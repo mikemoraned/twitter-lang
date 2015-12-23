@@ -6,6 +6,8 @@ You will need:
 * sbt (1.0 or later)
 * java (I use v8)
 
+Then:
+
     sbt clean compile
 
 # Running locally
