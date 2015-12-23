@@ -1,4 +1,4 @@
-FROM java:latest
+FROM java:8
 
 WORKDIR /app
 ADD target/universal/stage /app
