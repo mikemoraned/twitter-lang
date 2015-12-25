@@ -33,16 +33,14 @@ object GroupByGeohashApp {
 
     summarise(withGeoHashDF)
 
-//    withGeoHashDF.register("tweets")
-//    val byFreq = sqlContext.sql(
-//      """
-//        select geohash,count(*)
-//        from tweets
-//        group by geohash
-//        order by count(*) desc
-//      """.stripMargin)
-
-    val byFreq = withGeoHashDF.groupBy("geohash").count().orderBy(desc("count"))
+    withGeoHashDF.registerTempTable("tweets")
+    val byFreq = sqlContext.sql(
+      """
+        select geohash,count(*) as c
+        from tweets
+        group by geohash
+        order by c desc
+      """.stripMargin)
 
     summarise(byFreq)
   }
