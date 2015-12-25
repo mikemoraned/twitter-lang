@@ -8,13 +8,6 @@ import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.DoubleType
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.feature.{StringIndexer, Tokenizer, Word2Vec}
-//import org.apache.spark.ml.Pipeline
-//import org.apache.sparkml.classification.DecisionTreeClassifier
-//import org.apache.sparkml.feature.StringIndexer
-//import org.apache.sparkml.evaluation.MulticlassClassificationEvaluator
-//import org.apache.sparkmllib.util.MLUtils
-//import org.apache.sparksql.Row
-//import org.apache.spark.feature.Tokenizer
 
 object LearnHasMediaForTweetsApp {
 

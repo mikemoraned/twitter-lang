@@ -20,3 +20,5 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-streaming" % "1.5.0",
   "org.apache.spark" %% "spark-streaming-twitter" % "1.5.0")
 
+libraryDependencies += "ch.hsr" % "geohash" % "1.1.0"
+

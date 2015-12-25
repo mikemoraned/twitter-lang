@@ -13,4 +13,8 @@ project/boot/
 
 # Idea
 ## Directory-based project format:
-.idea/tweetsN/
+.idea/
+
+# Data
+tweetsN/
+tweets.consolidated.parquet/
