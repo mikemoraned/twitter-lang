@@ -1,12 +1,12 @@
 package com.houseofmoran.twitter.lang
 
-import ch.hsr.geohash.GeoHash
+import ch.hsr.geohash.{BoundingBox, WGS84Point, GeoHash}
 import com.fasterxml.jackson.databind.ObjectMapper
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.{SparkConf, SparkContext}
-import org.geojson.{LngLatAlt, Point, Feature, FeatureCollection}
+import org.geojson._
 
 import scala.collection.JavaConversions.asJavaCollection
 
@@ -51,14 +51,34 @@ object GroupByGeohashApp {
 
     summarise(byFreq)
 
+    implicit def wgs84PointToLngLatAlt(in: WGS84Point) = {
+      new LngLatAlt(in.getLongitude, in.getLatitude)
+    }
+
+    implicit def geoHashBoundingBoxToPolygon(in: BoundingBox) = {
+      val lowerRight : LngLatAlt = in.getLowerRight()
+      val upperLeft : LngLatAlt = in.getUpperLeft()
+      val polygon = new Polygon(
+        upperLeft,
+        new LngLatAlt(lowerRight.getLongitude, upperLeft.getLatitude),
+        lowerRight,
+        new LngLatAlt(upperLeft.getLongitude, lowerRight.getLatitude),
+        upperLeft
+      )
+      polygon
+    }
+
     val features = byFreq.select("geohash").map {
       case Row(s: String) => {
         val bb = GeoHash.fromGeohashString(s).getBoundingBox()
-        val centre = bb.getCenterPoint
+//        val centre = bb.getCenterPoint
 
         val feature = new Feature()
         feature.setId(s)
-        feature.setGeometry(new Point(new LngLatAlt(centre.getLongitude, centre.getLatitude)))
+//        val geometry = new Point(new LngLatAlt(centre.getLongitude, centre.getLatitude))
+        val geometry : Polygon = bb
+
+        feature.setGeometry(geometry)
         feature
       }
     }.collect()
