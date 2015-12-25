@@ -9,6 +9,11 @@ import org.apache.spark.sql._
 
 object GroupByGeohashApp {
 
+  def summarise(df: DataFrame) = {
+    df.printSchema()
+    df.show()
+  }
+
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("GroupByGeohashApp").setMaster("local[*]")
     val sc = new SparkContext(conf)
@@ -16,17 +21,29 @@ object GroupByGeohashApp {
 
     val tweetsDf = sqlContext.read.parquet("tweets.consolidated.parquet").cache()
 
-    tweetsDf.printSchema()
-    tweetsDf.show()
+    summarise(tweetsDf)
 
+    val hashlength = 4
     val toGeoHashString : (Row => String) = {
       case Row(latitude : Double, longitude : Double) =>
-        GeoHash.withCharacterPrecision(latitude, longitude, 4).toBase32
+        GeoHash.withCharacterPrecision(latitude, longitude, hashlength).toBase32
     }
 
     val withGeoHashDF = tweetsDf.withColumn("geohash", callUDF(toGeoHashString, StringType, col("location")))
 
-    withGeoHashDF.printSchema()
-    withGeoHashDF.show()
+    summarise(withGeoHashDF)
+
+//    withGeoHashDF.register("tweets")
+//    val byFreq = sqlContext.sql(
+//      """
+//        select geohash,count(*)
+//        from tweets
+//        group by geohash
+//        order by count(*) desc
+//      """.stripMargin)
+
+    val byFreq = withGeoHashDF.groupBy("geohash").count().orderBy(desc("count"))
+
+    summarise(byFreq)
   }
 }
