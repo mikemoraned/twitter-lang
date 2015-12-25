@@ -10,7 +10,7 @@ object ConsolidateSavedTweetsApp {
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
 
-    val tweetsFile = sqlContext.read.parquet("tweets/*.parquet")
+    val tweetsFile = sqlContext.read.parquet("tweetsN/*.parquet")
     val tweetsDF = tweetsFile.coalesce(100).toDF()
 
     println(s"Count of tweets: ${tweetsDF.count()}")
