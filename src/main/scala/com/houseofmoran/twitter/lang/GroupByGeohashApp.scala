@@ -1,7 +1,10 @@
 package com.houseofmoran.twitter.lang
 
+import java.io.File
+import java.io.FileWriter
+
 import ch.hsr.geohash.{BoundingBox, WGS84Point, GeoHash}
-import com.fasterxml.jackson.databind.ObjectMapper
+import com.fasterxml.jackson.databind.{SerializationFeature, ObjectMapper}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
@@ -22,11 +25,13 @@ object GroupByGeohashApp {
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
 
+    val hashlength = Integer.parseInt(args(0))
+    val geojsonFile = new File(args(1))
+
     val tweetsDf = sqlContext.read.parquet("tweets.consolidated.parquet").cache()
 
     summarise(tweetsDf)
 
-    val hashlength = 4
     val toGeoHashString : (Row => String) = {
       case Row(latitude : Double, longitude : Double) =>
         GeoHash.withCharacterPrecision(latitude, longitude, hashlength).toBase32
@@ -82,7 +87,8 @@ object GroupByGeohashApp {
     val featureCollection = new FeatureCollection
     featureCollection.addAll(asJavaCollection(features))
 
-    val s = new ObjectMapper().writeValueAsString(featureCollection)
-    println(s)
+    val mapper = new ObjectMapper()
+    mapper.enable(SerializationFeature.INDENT_OUTPUT)
+    mapper.writeValue(new FileWriter(geojsonFile), featureCollection)
   }
 }
