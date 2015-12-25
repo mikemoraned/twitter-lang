@@ -51,13 +51,13 @@ object GroupByGeohashApp {
 
     summarise(byFreq)
 
-    implicit def wgs84PointToLngLatAlt(in: WGS84Point) = {
+    def wgs84PointToLngLatAlt(in: WGS84Point) = {
       new LngLatAlt(in.getLongitude, in.getLatitude)
     }
 
-    implicit def geoHashBoundingBoxToPolygon(in: BoundingBox) = {
-      val lowerRight : LngLatAlt = in.getLowerRight()
-      val upperLeft : LngLatAlt = in.getUpperLeft()
+    def geoHashBoundingBoxToPolygon(in: BoundingBox) = {
+      val lowerRight : LngLatAlt = wgs84PointToLngLatAlt(in.getLowerRight())
+      val upperLeft : LngLatAlt = wgs84PointToLngLatAlt(in.getUpperLeft())
       val polygon = new Polygon(
         upperLeft,
         new LngLatAlt(lowerRight.getLongitude, upperLeft.getLatitude),
@@ -71,14 +71,10 @@ object GroupByGeohashApp {
     val features = byFreq.select("geohash").map {
       case Row(s: String) => {
         val bb = GeoHash.fromGeohashString(s).getBoundingBox()
-//        val centre = bb.getCenterPoint
 
         val feature = new Feature()
         feature.setId(s)
-//        val geometry = new Point(new LngLatAlt(centre.getLongitude, centre.getLatitude))
-        val geometry : Polygon = bb
-
-        feature.setGeometry(geometry)
+        feature.setGeometry(geoHashBoundingBoxToPolygon(bb))
         feature
       }
     }.collect()
