@@ -1,11 +1,14 @@
 package com.houseofmoran.twitter.lang
 
 import ch.hsr.geohash.GeoHash
-import org.apache.spark.sql.SQLContext
+import com.fasterxml.jackson.databind.ObjectMapper
+import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.StringType
 import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.sql._
+import org.geojson.{LngLatAlt, Point, Feature, FeatureCollection}
+
+import scala.collection.JavaConversions.asJavaCollection
 
 object GroupByGeohashApp {
 
@@ -44,7 +47,26 @@ object GroupByGeohashApp {
             group by geohash
             order by p desc
       """.stripMargin)
+      .cache()
 
     summarise(byFreq)
+
+    val features = byFreq.select("geohash").map {
+      case Row(s: String) => {
+        val bb = GeoHash.fromGeohashString(s).getBoundingBox()
+        val centre = bb.getCenterPoint
+
+        val feature = new Feature()
+        feature.setId(s)
+        feature.setGeometry(new Point(new LngLatAlt(centre.getLongitude, centre.getLatitude)))
+        feature
+      }
+    }.collect()
+
+    val featureCollection = new FeatureCollection
+    featureCollection.addAll(asJavaCollection(features))
+
+    val s = new ObjectMapper().writeValueAsString(featureCollection)
+    println(s)
   }
 }
