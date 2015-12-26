@@ -31,21 +31,15 @@ object LearnHasMediaForTweetsApp {
     tweetsDf.groupBy("hasMedia").count().show()
 
     val mlDf = HasMedia.normalise(tweetsDf)
+    val Array(training : DataFrame, test : DataFrame) = mlDf.randomSplit(Array(0.7, 0.3), seed = 1)
 
     val tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
     val word2Vec = new Word2Vec().setInputCol("words").setOutputCol("wordvecs")
       .setVectorSize(3)
       .setMinCount(0)
-    val word2VecModel = word2Vec.fit(tokenizer.transform(mlDf))
-//    val mlWord2VecDf = word2VecModel.transform(tokenizer.transform(mlDf))
-//
-//    mlWord2VecDf.printSchema()
-//    mlWord2VecDf.show()
+    val word2VecModel = word2Vec.fit(tokenizer.transform(training))
 
     val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel")
-//      .fit(mlWord2VecDf)
-
-    val Array(training : DataFrame, test : DataFrame) = mlDf.randomSplit(Array(0.7, 0.3), seed = 1)
 
     val treeClassifier = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("wordvecs")
     val pipeline = new Pipeline().setStages(Array(tokenizer, word2VecModel, labelIndexer, treeClassifier))
