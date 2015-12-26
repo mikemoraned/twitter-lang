@@ -7,7 +7,7 @@ import ch.hsr.geohash.{BoundingBox, WGS84Point, GeoHash}
 import com.fasterxml.jackson.databind.{SerializationFeature, ObjectMapper}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.StringType
+import org.apache.spark.sql.types.{DoubleType, StringType}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.geojson._
 
@@ -56,6 +56,12 @@ object GroupByGeohashApp {
 
     summarise(byFreq)
 
+    val maxP : Double = byFreq.select(max("p")).first().getDouble(0)
+    val scalePercentageToMax : (Double => Double) = { percentage : Double =>
+      percentage / maxP
+    }
+    val byFreqWithScaledPercentage = byFreq.withColumn("pScaled", callUDF(scalePercentageToMax, DoubleType, col("p")))
+
     def wgs84PointToLngLatAlt(in: WGS84Point) = {
       new LngLatAlt(in.getLongitude, in.getLatitude)
     }
@@ -73,13 +79,18 @@ object GroupByGeohashApp {
       polygon
     }
 
-    val features = byFreq.select("geohash").map {
-      case Row(s: String) => {
+    val features = byFreqWithScaledPercentage.map {
+      case Row(s: String, count: Long, proportion: Double, proportionOfMax: Double) => {
         val bb = GeoHash.fromGeohashString(s).getBoundingBox()
 
         val feature = new Feature()
         feature.setId(s)
         feature.setGeometry(geoHashBoundingBoxToPolygon(bb))
+        feature.setProperty("title", s)
+        feature.setProperty("description", s"geohash: ${s}, tweets: ${count}")
+        feature.setProperty("stroke-opacity", 0.5)
+        feature.setProperty("fill", "#ff0000")
+        feature.setProperty("fill-opacity", proportionOfMax)
         feature
       }
     }.collect()
