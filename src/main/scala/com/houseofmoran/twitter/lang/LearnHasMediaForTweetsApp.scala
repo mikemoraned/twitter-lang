@@ -30,31 +30,28 @@ object LearnHasMediaForTweetsApp {
 
     tweetsDf.groupBy("hasMedia").count().show()
 
-    val boolToDouble : (Boolean => Double) = (b : Boolean) => if (b) 1.0 else 0.0
-    val mlDf = tweetsDf.withColumn("label", callUDF(boolToDouble, DoubleType, col("hasMedia")))
-
-    mlDf.printSchema()
-    mlDf.show()
+    val mlDf = HasMedia.normalise(tweetsDf)
 
     val tokenizer = new Tokenizer().setInputCol("text").setOutputCol("words")
     val word2Vec = new Word2Vec().setInputCol("words").setOutputCol("wordvecs")
       .setVectorSize(3)
       .setMinCount(0)
     val word2VecModel = word2Vec.fit(tokenizer.transform(mlDf))
-    val mlWord2VecDf = word2VecModel.transform(tokenizer.transform(mlDf))
-
-    mlWord2VecDf.printSchema()
-    mlWord2VecDf.show()
+//    val mlWord2VecDf = word2VecModel.transform(tokenizer.transform(mlDf))
+//
+//    mlWord2VecDf.printSchema()
+//    mlWord2VecDf.show()
 
     val labelIndexer = new StringIndexer().setInputCol("label").setOutputCol("indexedLabel")
-      .fit(mlWord2VecDf)
+//      .fit(mlWord2VecDf)
 
-    val Array(training : DataFrame, test : DataFrame) = mlWord2VecDf.randomSplit(Array(0.7, 0.3), seed = 1)
+    val Array(training : DataFrame, test : DataFrame) = mlDf.randomSplit(Array(0.7, 0.3), seed = 1)
 
     val treeClassifier = new DecisionTreeClassifier().setLabelCol("indexedLabel").setFeaturesCol("wordvecs")
-    val pipeline = new Pipeline().setStages(Array(labelIndexer, treeClassifier))
+    val pipeline = new Pipeline().setStages(Array(tokenizer, word2VecModel, labelIndexer, treeClassifier))
 
     val model = pipeline.fit(training)
+
     val predictions = model.transform(test).cache()
 
     predictions.printSchema()
@@ -74,7 +71,7 @@ object LearnHasMediaForTweetsApp {
     println (incorrect.count())
     incorrect.show()
 
-    val treeModel = model.stages(1).asInstanceOf[DecisionTreeClassificationModel]
+    val treeModel = model.stages(3).asInstanceOf[DecisionTreeClassificationModel]
 
     println(model)
     println(treeModel.toDebugString)
