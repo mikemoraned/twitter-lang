@@ -1,5 +1,7 @@
 package com.houseofmoran.twitter.lang
 
+import java.io.{FileOutputStream, ObjectOutputStream, File}
+
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
@@ -16,7 +18,12 @@ object LearnHasMediaForTweetsApp {
     val sc = new SparkContext(conf)
     val sqlContext = SQLContext.getOrCreate(sc)
 
-    val tweetsDf = sqlContext.read.parquet("tweets.consolidated.parquet").cache()
+    val sampleFraction = args(0).toDouble
+    val modelFileOut = new File(args(1))
+
+    val tweetsDf = sqlContext.read.parquet("tweets.consolidated.parquet")
+      .sample(false, sampleFraction, 1)
+      .cache()
 
     tweetsDf.printSchema()
     tweetsDf.show()
@@ -71,5 +78,14 @@ object LearnHasMediaForTweetsApp {
 
     println(model)
     println(treeModel.toDebugString)
+
+    val objOut = new ObjectOutputStream(new FileOutputStream(modelFileOut))
+    try {
+      objOut.writeObject(model)
+    }
+    finally {
+      objOut.flush()
+      objOut.close()
+    }
   }
 }
