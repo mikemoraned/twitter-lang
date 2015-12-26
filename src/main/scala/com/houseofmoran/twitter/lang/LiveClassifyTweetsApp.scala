@@ -4,6 +4,7 @@ import java.io._
 
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.classification.DecisionTreeClassificationModel
+import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.streaming.{StreamingContext, Minutes}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -33,15 +34,15 @@ object LiveClassifyTweetsApp {
 
     val treeModel = model.stages(3).asInstanceOf[DecisionTreeClassificationModel]
 
-    println(model)
-    println(treeModel.toDebugString)
-
     val twitterStream = TwitterStream.fromAuth(ssc, args(1), args(2), args(3), args(4))
 
     val tweetStream = TwitterStream.mapToTweetStream(twitterStream)
 
+    val evaluator = new MulticlassClassificationEvaluator()
+      .setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("precision")
     val windowSize = batchInterval * 5
-    tweetStream.window(windowSize, windowSize).foreachRDD( (tweetsRDD, time) => {
+    val slideDuration = batchInterval
+    tweetStream.window(windowSize, slideDuration).foreachRDD( (tweetsRDD, time) => {
       val tweetsDF = tweetsRDD.toDF()
       tweetsDF.show()
 
@@ -49,8 +50,8 @@ object LiveClassifyTweetsApp {
 
       val predictions = model.transform(normalisedDF).cache()
 
-      predictions.printSchema()
-      predictions.show()
+      val accuracy = evaluator.evaluate(predictions)
+      println(s"Accuracy = ${accuracy}, Test Error = ${1 - accuracy}")
     })
 
     ssc.start()
