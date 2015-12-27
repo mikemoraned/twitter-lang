@@ -42,7 +42,7 @@ object LiveClassifyTweetsApp {
     val evaluator = new MulticlassClassificationEvaluator()
       .setLabelCol("indexedLabel").setPredictionCol("prediction").setMetricName("precision")
     val windowSize = batchInterval * 5
-    val slideDuration = batchInterval
+    val slideDuration = batchInterval * 5
     tweetStream.window(windowSize, slideDuration).foreachRDD( (tweetsRDD, time) => {
       val tweetsDF = tweetsRDD.toDF()
       tweetsDF.show()
