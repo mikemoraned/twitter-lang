@@ -1,10 +1,9 @@
-package com.houseofmoran.twitter.lang
+package com.houseofmoran.twitter.lang.geo
 
-import java.io.File
-import java.io.FileWriter
+import java.io.{File, FileWriter}
 
-import ch.hsr.geohash.{BoundingBox, WGS84Point, GeoHash}
-import com.fasterxml.jackson.databind.{SerializationFeature, ObjectMapper}
+import ch.hsr.geohash.{BoundingBox, GeoHash, WGS84Point}
+import com.fasterxml.jackson.databind.{ObjectMapper, SerializationFeature}
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types.{DoubleType, StringType}

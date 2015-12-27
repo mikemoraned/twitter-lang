@@ -1,15 +1,13 @@
-package com.houseofmoran.twitter.lang
+package com.houseofmoran.twitter.lang.hasmedia
 
-import java.io.{FileOutputStream, ObjectOutputStream, File}
+import java.io.{File, FileOutputStream, ObjectOutputStream}
 
 import org.apache.spark.ml.Pipeline
 import org.apache.spark.ml.classification.{DecisionTreeClassificationModel, DecisionTreeClassifier}
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
-import org.apache.spark.sql.{DataFrame, SQLContext}
-import org.apache.spark.sql.functions._
-import org.apache.spark.sql.types.DoubleType
-import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.ml.feature.{StringIndexer, Tokenizer, Word2Vec}
+import org.apache.spark.sql.{DataFrame, SQLContext}
+import org.apache.spark.{SparkConf, SparkContext}
 
 object LearnHasMediaForTweetsApp {
 

@@ -1,12 +1,13 @@
-package com.houseofmoran.twitter.lang
+package com.houseofmoran.twitter.lang.hasmedia
 
 import java.io._
 
+import com.houseofmoran.twitter.lang.TwitterStream
 import org.apache.spark.ml.PipelineModel
 import org.apache.spark.ml.classification.DecisionTreeClassificationModel
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator
 import org.apache.spark.sql.SQLContext
-import org.apache.spark.streaming.{StreamingContext, Minutes}
+import org.apache.spark.streaming.{Minutes, StreamingContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
 object LiveClassifyTweetsApp {

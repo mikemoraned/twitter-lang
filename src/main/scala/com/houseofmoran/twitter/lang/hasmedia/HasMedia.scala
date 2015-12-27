@@ -1,4 +1,4 @@
-package com.houseofmoran.twitter.lang
+package com.houseofmoran.twitter.lang.hasmedia
 
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions._
