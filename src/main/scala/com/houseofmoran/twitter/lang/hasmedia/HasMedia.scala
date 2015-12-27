@@ -12,7 +12,6 @@ object HasMedia {
     val normalised = df.withColumn("label", callUDF(boolToDouble, DoubleType, col("hasMedia")))
 
     normalised.printSchema()
-    normalised.show()
 
     normalised
   }

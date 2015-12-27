@@ -45,7 +45,6 @@ object LiveClassifyTweetsApp {
     val slideDuration = batchInterval * 5
     tweetStream.window(windowSize, slideDuration).foreachRDD( (tweetsRDD, time) => {
       val tweetsDF = tweetsRDD.toDF()
-      tweetsDF.show()
 
       val normalisedDF = HasMedia.normalise(tweetsDF)
 
