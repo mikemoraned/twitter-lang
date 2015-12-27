@@ -9,7 +9,7 @@ import org.apache.spark.ml.feature.{StringIndexer, Tokenizer, Word2Vec}
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.apache.spark.{SparkConf, SparkContext}
 
-object LearnHasMediaForTweetsApp {
+object LearnFromTweetsApp {
 
   def main(args: Array[String]): Unit = {
     val conf = new SparkConf().setAppName("LearnHasMediaForTweetsApp").setMaster("local[*]")
